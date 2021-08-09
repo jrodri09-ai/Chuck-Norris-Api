@@ -1,17 +1,49 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import Chuck from './ChuckNorris.jpeg'
 import axios from 'axios';
 
 function App() {
 
- useEffect( () => {
+const [state, setState] = useState({
+  joke: '',
+  searchKeyword: '',
+  searchUrl: 'https://api.chucknorris.io/jokes/search?query='
+})
+ 
+  useEffect( () => {
    fetchData();
+   // eslint-disable-next-line react-hooks/exhaustive-deps
  }, []);
 
  const fetchData = async () => {
   const result = await axios.get('https://api.chucknorris.io/jokes/random');
   console.log(result.data.value);
+  setState({
+    ...state,
+    joke: result.data.value
+  });
+ }
+
+
+ const searchJoke = (event) => {
+   console.log(event.target.value);
+   setState ({
+     ...state,
+     searchKeyword: event.target.value
+   })
+ }
+
+ const fetchMyJoke = async () => {
+   const result = await axios.get(state.searchUrl + state.searchKeyword);
+   console.log(result.data.result);
+
+   const jokePosition = Math.floor(Math.random()*result.data.result.length);
+   console.log(jokePosition); 
+   setState ({
+     ...state,
+     joke: result.data.result[jokePosition].value
+   })
  }
   
   
@@ -29,12 +61,12 @@ function App() {
              Search for a word
            </div>
            <div className="card-body">
-             <input type="text"/>
+             <input type="text" onChange={searchJoke}/>
            </div>
          </div>
 
          <div>
-           <button className="btn btn-warning btn-lg">Generate Joke</button>
+           <button onClick={fetchMyJoke} className="btn btn-warning btn-lg">Generate Joke</button>
          </div>
 
        </div>
@@ -42,7 +74,8 @@ function App() {
 
      </div>
    <h2 className="subTitle">Here is the Joke</h2>
-   <h4>Chuck Norris is not afraid of anything</h4>
+   <h4>{state.joke}</h4>
+   
    </div>
   );
 }
